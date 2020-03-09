@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import helmet from "helmet";
 import { ApolloServer } from "apollo-server-express";
 
 import mongoose from "mongoose";
@@ -10,6 +11,8 @@ import schema from "./schema";
 dotenv.config();
 
 const app = express();
+
+app.use(helmet()); // ayuda a proteger de algunas vulnerabilidades web conocidas mediante el establecimiento correcto de cabeceras HTTP
 
 const server = new ApolloServer({
   schema,

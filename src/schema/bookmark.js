@@ -11,7 +11,7 @@ export const typeDef = gql`
 
   extend type Mutation {
     createBookmark(
-      uri: String!
+      uri: Uri!
       title: String
       description: String
       tags: [String]
@@ -62,9 +62,9 @@ export const resolvers = {
       });
 
       try {
-        // it save new link in db
+        // save new link in db
         await link.save();
-        // it save new bookmark in db
+        // save new bookmark in db
         await bookmark.save();
       } catch (err) {
         // if an error occurs saving in db
