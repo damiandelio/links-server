@@ -1,8 +1,27 @@
 import { gql } from "apollo-server-express";
+import { hash, compare } from "bcryptjs";
 
 import { User } from "../models/user";
+import generateAccessToken from "../utils/generateAccessToken";
 
 export const typeDef = gql`
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+  }
+
+  type LoginResponse {
+    accessTouken: String!
+  }
+
+  enum SortFindManyUserInput {
+    NAME_ASD
+    NAME_DESC
+    EMAIL_ASD
+    EMAIL_DESC
+  }
+
   extend type Query {
     """
     Busca un ususario por id.
@@ -28,24 +47,13 @@ export const typeDef = gql`
     ): [User]!
   }
 
-  enum SortFindManyUserInput {
-    NAME_ASD
-    NAME_DESC
-    EMAIL_ASD
-    EMAIL_DESC
-  }
-
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-  }
-
   extend type Mutation {
     """
     Crea un usuario nuevo. Verifica que no haya un usuario ya registrado con ese email.
     """
-    createUser(name: String!, email: String!): Response!
+    createUser(name: String!, email: String!, password: String!): Response!
+
+    login(email: String!, password: String!): LoginResponse!
   }
 `;
 
@@ -90,11 +98,15 @@ export const resolvers = {
     }
   },
   Mutation: {
-    createUser: async (_, { name, email }) => {
+    createUser: async (_, { name, email, password }) => {
+      // encrypt password
+      const hashedPassword = await hash(password, 12);
+
       // instancia un nuevo usuario del esquema User
       const user = new User({
         name,
-        email
+        email: email.toLowerCase(),
+        password: hashedPassword
       });
 
       try {
@@ -121,6 +133,33 @@ export const resolvers = {
       return {
         error: false,
         info: "New user created successfully."
+      };
+    },
+
+    login: async (_, { email, password }, context) => {
+      console.log(context.user);
+
+      // chequea que no haya campos vacíos
+      if (email === "" || password === "") {
+        throw new Error("Empty fields email or password");
+      }
+
+      // search the user in the db
+      const user = await User.findOne({
+        email: email.toLowerCase()
+      });
+
+      // Si no se encuentra el usuario en la db lanza una exepcion
+      if (!user) throw new Error("Could not find user");
+
+      // compara la contraseña de la peticion con la encriptada proveniente de la db
+      const valid = await compare(password, user.password);
+      // si la contraseña no es valida lanza una exepcion
+      if (!valid) throw new Error("Bad password");
+
+      // login successful
+      return {
+        accessTouken: generateAccessToken(user.id, user.email)
       };
     }
   }

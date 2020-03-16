@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
+import { verify } from "jsonwebtoken";
 import { ApolloServer } from "apollo-server-express";
 
 import mongoose from "mongoose";
@@ -20,7 +21,23 @@ const server = new ApolloServer({
   playground: process.env.NODE_ENV === "development" ? true : false,
   introspection: true,
   tracing: true,
-  path: "/"
+  path: "/",
+  context: ({ req }) => {
+    let user;
+    // get the user token from the headers.
+    const token = req.headers.authorization || "";
+    // secret word
+    const key = process.env.TOKEN_KEY || "";
+
+    // if a token is defined in the header
+    if (token) {
+      // try to retrieve a user id with the token
+      user = verify(token, key).user;
+    }
+
+    // add the user to the context
+    return { user };
+  }
 });
 
 server.applyMiddleware({

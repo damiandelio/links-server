@@ -33,7 +33,7 @@ export const typeDef = gql`
     title: String!
     description: String
     tags: [String]!
-    # by: User!
+    # owner: User!
   }
 `;
 
@@ -58,7 +58,7 @@ export const resolvers = {
         title,
         description,
         tags
-        //by,
+        //owner,
       });
 
       try {

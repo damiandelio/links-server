@@ -15,6 +15,10 @@ export const UserSchema = new Schema(
       unique: true,
       required: true
     },
+    password: {
+      type: String,
+      required: true
+    },
     bookmarks: {
       type: [{ type: Schema.Types.ObjectId, ref: "Bookmark" }]
     }
