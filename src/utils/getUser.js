@@ -4,7 +4,7 @@ import { decryptStr } from "./encryption";
 const getUser = encryptedToken => {
   let user;
   // secret key
-  const key = process.env.SECRET_KEY || "";
+  const key = process.env.ACCESS_TOKEN_SECRET;
 
   // if a token is defined in the header
   if (encryptedToken) {

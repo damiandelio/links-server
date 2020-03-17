@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-const key = "u㢉s80y㢓8A౨&h౨Ñ6gŸ㒔Ÿ"; // mas by 32 bytes
-const iv = "uŸ౨♥Ñs8㒔"; // mast by 16 bytes
+const key = process.env.ENCRYPTION_KEY; // mast by 32 bytes
+const iv = process.env.ENCRYPTION_IV; // mast by 16 bytes
 
 // encrypt a string
 export const encryptStr = text => {

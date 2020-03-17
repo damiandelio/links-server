@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 import { hash, compare } from "bcryptjs";
 
 import { User } from "../models/user";
-import generateAccessToken from "../utils/generateAccessToken";
+import { createAccessToken } from "../utils/auth";
 import { encryptStr } from "../utils/encryption";
 
 export const typeDef = gql`
@@ -66,6 +66,8 @@ export const resolvers = {
       return user;
     },
 
+    /////////////////////////////////////////////////////////////////////////
+
     userSelectMany: async (_, { filter, page = 1, limit = 20, sort }) => {
       const MIN_NUM_ITEMS = 1,
         MAX_NUM_ITEMS = 50;
@@ -98,9 +100,10 @@ export const resolvers = {
       return [...users];
     }
   },
+
   Mutation: {
     createUser: async (_, { name, email, password }) => {
-      // encrypt password
+      // hash password
       const hashedPassword = await hash(password, 12);
 
       // instancia un nuevo usuario del esquema User
@@ -137,6 +140,8 @@ export const resolvers = {
       };
     },
 
+    /////////////////////////////////////////////////////////////////////////
+
     login: async (_, { email, password }) => {
       // chequea que no haya campos vacíos
       if (email === "" || password === "") {
@@ -156,10 +161,10 @@ export const resolvers = {
       // si la contraseña no es valida lanza una exepcion
       if (!valid) throw new Error("Bad password");
 
-      // genera un token
-      const token = generateAccessToken(user.id);
+      // crea un token
+      const token = createAccessToken(user);
 
-      // login successful
+      // login successful: returns an encrypted token
       return {
         accessToken: encryptStr(token)
       };
