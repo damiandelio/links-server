@@ -2,7 +2,10 @@ import { gql } from "apollo-server-express";
 import { hash, compare } from "bcryptjs";
 
 import { User } from "../models/user";
-import generateAccessToken from "../utils/generateAccessToken";
+import {
+  generateAccessToken,
+  encryptToken
+} from "../utils/generateAccessToken";
 
 export const typeDef = gql`
   type User {
@@ -12,7 +15,7 @@ export const typeDef = gql`
   }
 
   type LoginResponse {
-    accessTouken: String!
+    accessToken: String!
   }
 
   enum SortFindManyUserInput {
@@ -157,9 +160,12 @@ export const resolvers = {
       // si la contraseña no es valida lanza una exepcion
       if (!valid) throw new Error("Bad password");
 
+      // genera un token
+      const token = generateAccessToken(user.id);
+
       // login successful
       return {
-        accessTouken: generateAccessToken(user.id, user.email)
+        accessToken: encryptToken(token)
       };
     }
   }

@@ -1,19 +1,27 @@
 import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
-import { verify } from "jsonwebtoken";
 import { ApolloServer } from "apollo-server-express";
-
 import mongoose from "mongoose";
 
 import "./utils/db";
 import schema from "./schema";
+import getUser from "./utils/getUser";
 
 dotenv.config();
 
 const app = express();
 
-app.use(helmet()); // ayuda a proteger de algunas vulnerabilidades web conocidas mediante el establecimiento correcto de cabeceras HTTP
+app.use(helmet()); // establece las cabeceras HTTP
+app.use(helmet.referrerPolicy({ policy: "same-origin" }));
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'"]
+    }
+  })
+);
 
 const server = new ApolloServer({
   schema,
@@ -22,21 +30,15 @@ const server = new ApolloServer({
   introspection: true,
   tracing: true,
   path: "/",
-  context: ({ req }) => {
-    let user;
-    // get the user token from the headers.
-    const token = req.headers.authorization || "";
-    // secret word
-    const key = process.env.TOKEN_KEY || "";
+  context: ({ req, res }) => {
+    // get the user encrypted token from the headers.
+    const encryptedToken = req.headers.authorization || "";
 
-    // if a token is defined in the header
-    if (token) {
-      // try to retrieve a user id with the token
-      user = verify(token, key).user;
-    }
+    // retrieve user id
+    const user = getUser(encryptedToken);
 
-    // add the user to the context
-    return { user };
+    // return context whit the user id
+    return { req, res, user };
   }
 });
 
