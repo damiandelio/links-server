@@ -12,8 +12,10 @@ dotenv.config();
 
 const app = express();
 
-app.use(helmet()); // establece las cabeceras HTTP
+// configure HTTP headers
+app.use(helmet());
 app.use(helmet.referrerPolicy({ policy: "same-origin" }));
+/*
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
@@ -22,6 +24,7 @@ app.use(
     }
   })
 );
+*/
 
 const server = new ApolloServer({
   schema,
@@ -58,5 +61,5 @@ server.applyMiddleware({
 
 app.listen({ port: process.env.PORT || 4000 }, () => {
   console.log(`🚀 Server listening on port ${process.env.PORT || 4000}`);
-  // console.log(`😷 Health checks available at ${process.env.HEALTH_ENDPOINT}`);
+  console.log(`😷 Health checks available at ${process.env.HEALTH_ENDPOINT}`);
 });

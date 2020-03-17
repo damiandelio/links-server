@@ -2,10 +2,8 @@ import { gql } from "apollo-server-express";
 import { hash, compare } from "bcryptjs";
 
 import { User } from "../models/user";
-import {
-  generateAccessToken,
-  encryptToken
-} from "../utils/generateAccessToken";
+import generateAccessToken from "../utils/generateAccessToken";
+import { encryptStr } from "../utils/encryption";
 
 export const typeDef = gql`
   type User {
@@ -139,9 +137,7 @@ export const resolvers = {
       };
     },
 
-    login: async (_, { email, password }, context) => {
-      console.log(context.user);
-
+    login: async (_, { email, password }) => {
       // chequea que no haya campos vacíos
       if (email === "" || password === "") {
         throw new Error("Empty fields email or password");
@@ -165,7 +161,7 @@ export const resolvers = {
 
       // login successful
       return {
-        accessToken: encryptToken(token)
+        accessToken: encryptStr(token)
       };
     }
   }
