@@ -33,7 +33,7 @@ export const typeDef = gql`
     title: String!
     description: String
     tags: [String]!
-    # owner: User!
+    owner: User!
   }
 `;
 
@@ -46,8 +46,12 @@ export const resolvers = {
   Mutation: {
     createBookmark: async (
       _,
-      { uri, title = "", description = "", tags = [] }
+      { uri, title = "", description = "", tags = [] },
+      context
     ) => {
+      // check if the user is logged in
+      if (!context.user) throw new Error("You need to be logged");
+
       const link = new Link({
         uri,
         videoResources: []
@@ -57,8 +61,8 @@ export const resolvers = {
         link,
         title,
         description,
-        tags
-        //owner,
+        tags,
+        owner: context.user
       });
 
       try {

@@ -5,7 +5,8 @@ export const BookmarkSchema = new Schema(
   {
     link: {
       type: Schema.Types.ObjectId,
-      ref: "Link"
+      ref: "Link",
+      required: true
     },
     title: {
       type: String,
@@ -19,8 +20,10 @@ export const BookmarkSchema = new Schema(
     tags: {
       type: [String]
     },
-    by: {
-      type: { type: Schema.Types.ObjectId, ref: "User" }
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true
     }
   },
   {
