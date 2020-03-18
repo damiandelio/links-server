@@ -2,6 +2,7 @@ import { gql } from "apollo-server-express";
 
 import { Bookmark } from "../models/bookmark";
 import { Link } from "../models/link";
+import { User } from "../models/user";
 
 export const typeDef = gql`
   extend type Query {
@@ -57,7 +58,7 @@ export const resolvers = {
         videoResources: []
       });
 
-      const bookmark = new Bookmark({
+      let bookmark = new Bookmark({
         link,
         title,
         description,
@@ -68,10 +69,17 @@ export const resolvers = {
       try {
         // save new link in db
         await link.save();
+
         // save new bookmark in db
-        await bookmark.save();
+        bookmark = await bookmark.save();
+
+        // update the user and save the bookmark in his bookmark`s array
+        await User.updateOne(
+          { _id: context.user },
+          { $push: { bookmarks: bookmark._id } }
+        );
       } catch (err) {
-        // if an error occurs saving in db
+        // if an error occurred saving to the database
         return {
           error: true,
           info: "Error creating bookmark."
