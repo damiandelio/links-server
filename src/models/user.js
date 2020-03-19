@@ -20,7 +20,13 @@ export const UserSchema = new Schema(
       required: true
     },
     bookmarks: {
-      type: [{ type: Schema.Types.ObjectId, ref: "Bookmark" }]
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Bookmark",
+          required: true
+        }
+      ]
     }
   },
   {

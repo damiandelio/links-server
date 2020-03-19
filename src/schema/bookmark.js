@@ -11,21 +11,24 @@ export const typeDef = gql`
   }
 
   extend type Mutation {
+    """
+    Create a new bookmark
+    """
     createBookmark(
       uri: Uri!
       title: String
       description: String
       tags: [String]
-    ): Response!
+    ): ID!
 
     updateBookmark(
       id: ID!
       title: String
       description: String
       tags: [String]
-    ): Response!
+    ): Bookmark!
 
-    delateBookmark(id: ID!): Response!
+    delateBookmark(id: ID!): Boolean!
   }
 
   type Bookmark {
@@ -44,6 +47,7 @@ export const resolvers = {
       return;
     }
   },
+
   Mutation: {
     createBookmark: async (
       _,
@@ -76,20 +80,15 @@ export const resolvers = {
         // update the user and save the bookmark in his bookmark`s array
         await User.updateOne(
           { _id: context.user },
-          { $push: { bookmarks: bookmark._id } }
+          { $push: { bookmarks: bookmark._id } },
+          { omitUndefined: true }
         );
       } catch (err) {
         // if an error occurred saving to the database
-        return {
-          error: true,
-          info: "Error creating bookmark."
-        };
+        throw new Error("Error creating bookmark");
       }
 
-      return {
-        error: false,
-        info: "Bookmark created."
-      };
+      return bookmark._id;
     }
   }
 };

@@ -12,7 +12,7 @@ export const typeDef = gql`
     email: String!
   }
 
-  type LoginResponse {
+  type Auth {
     accessToken: String!
   }
 
@@ -52,9 +52,9 @@ export const typeDef = gql`
     """
     Crea un usuario nuevo. Verifica que no haya un usuario ya registrado con ese email.
     """
-    createUser(name: String!, email: String!, password: String!): Response!
+    createUser(name: String!, email: String!, password: String!): Auth!
 
-    login(email: String!, password: String!): LoginResponse!
+    login(email: String!, password: String!): Auth!
   }
 `;
 
@@ -107,7 +107,7 @@ export const resolvers = {
       const hashedPassword = await hash(password, 12);
 
       // instancia un nuevo usuario del esquema User
-      const user = new User({
+      let user = new User({
         name,
         email: email.toLowerCase(),
         password: hashedPassword
@@ -115,28 +115,24 @@ export const resolvers = {
 
       try {
         // intenta crear el usuario en la DB
-        await user.save();
+        user = await user.save();
       } catch (err) {
         // segun el codigo de error retorna informacion al cliente
         switch (err.code) {
           case 11000:
-            return {
-              error: true,
-              info: "This email is already in use."
-            };
-            break;
+            throw new Error("This email is already in use.");
 
           default:
-            return {
-              error: true,
-              info: `Undefined error. Code: ${err.code}`
-            };
+            throw new Error("Error al crear el usuario.");
         }
       }
 
+      // crea un token
+      const token = createAccessToken(user);
+
+      // new user created successfullyl: returns an encrypted token
       return {
-        error: false,
-        info: "New user created successfully."
+        accessToken: encryptStr(token)
       };
     },
 
@@ -145,7 +141,7 @@ export const resolvers = {
     login: async (_, { email, password }) => {
       // chequea que no haya campos vacíos
       if (email === "" || password === "") {
-        throw new Error("Empty fields email or password");
+        throw new Error("Empty fields, email or password");
       }
 
       // search the user in the db
@@ -162,7 +158,7 @@ export const resolvers = {
       if (!valid) throw new Error("Bad password");
 
       // crea un token
-      const token = createAccessToken(user);
+      const token = createAccessToken(user); // user is the user id
 
       // login successful: returns an encrypted token
       return {

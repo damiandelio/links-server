@@ -20,11 +20,6 @@ const typeDef = gql`
   type Mutation {
     _: String
   }
-
-  type Response {
-    error: Boolean!
-    info: String
-  }
 `;
 
 const resolvers = {};
