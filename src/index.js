@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
+import depthLimit from "graphql-depth-limit";
 import { ApolloServer } from "apollo-server-express";
 import mongoose from "mongoose";
 
@@ -30,9 +31,10 @@ const server = new ApolloServer({
   schema,
   cors: true,
   playground: process.env.NODE_ENV === "development" ? true : false,
-  introspection: true,
+  introspection: process.env.NODE_ENV === "development" ? true : false,
   tracing: true,
   path: "/",
+  validationRules: [depthLimit(4)],
   context: ({ req, res }) => {
     // get the user encrypted token from the headers.
     const encryptedToken = req.headers.authorization || "";
