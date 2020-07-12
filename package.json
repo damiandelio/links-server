@@ -1,5 +1,5 @@
 {
-  "name": "links",
+  "name": "links-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -19,7 +19,7 @@
     }
   },
   "keywords": [],
-  "author": "",
+  "author": "Damián De Lio",
   "license": "MIT",
   "dependencies": {
     "@babel/cli": "^7.8.4",
