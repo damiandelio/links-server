@@ -27,6 +27,25 @@ app.use(
 );
 */
 
+// checks timeout
+app.use((req, res, next) => {
+  req.incrementResolverCount = () => {
+    let runTime = Date.now() - startTime;
+
+    if (runTime > config.graphql.queryTimeout) {
+      if (req.logTimeoutError) {
+        logger("ERROR", "Request " + req.uuid + " query execution timeout");
+      }
+
+      req.logTimeoutError = false;
+      throw new Error("Query execution has timeout. Field resolution aborted");
+    }
+    this.resolverCount++;
+  };
+
+  next();
+});
+
 const server = new ApolloServer({
   schema,
   cors: true,
